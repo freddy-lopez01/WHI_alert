@@ -36,6 +36,9 @@ Focuses on how the system performs its functions, addressing these aspects:
 - security
 
 ## Use Case Scenarios
+- Real-time referencing for areas severely impacted by weather (hurricanes, tornadoes, etc)
+- Monitoring severity of entire regions based off of waffle house operational Status
+- Possibly integrate weather map to reference between the two
 
 ## System Constraints
 

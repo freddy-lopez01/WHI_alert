@@ -26,6 +26,14 @@ This section outlines the core features and functionality of the WHI system.
 - API Integration
 - Disaster alerts
 
+### TO-DO List
+
+- [ ] Fetching all store location URL (Simon)
+- [ ] Parse through HTML and isolate `storeCode`, `city`, and `state`. (Freddy)
+- [ ] Start initial frontend (Freddy)
+- [ ] MongoDB set up (Simon)
+
+
 ## Non-Functional Requirements
 
 Focuses on how the system performs its functions, addressing these aspects:

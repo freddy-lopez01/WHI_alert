@@ -40,6 +40,13 @@ def main():
     url3 = "https://locations.wafflehouse.com/_next/data/uEgKOOm2HjTXZT4HQfFmK/cartersville-ga-1718.json?slug=cartersville-ga-1718"
     data = fetch_api_data(url3)
 
+    #response = requests.get(api_url)
+    response = requests.get(api_url)
+    response.raise_for_status()  # Check if the request was successful
+    print(f"Response Content-Type: {response.headers['Content-Type']}")
+    print(response.text)
+
+
 
 if __name__ == "__main__":
     main()

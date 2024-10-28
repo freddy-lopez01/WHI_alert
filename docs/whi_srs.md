@@ -118,3 +118,6 @@ Address any technical, hardware, or any other limitations that may affect system
 
 ## Implementation Plan
 
+# Note: 
+The endpoint URL destination is not consistent and changes unpredictlbly. API endpoint used in request_store1718.py no longer returns a valid location and not the approach of using a structured endpoint URL to populate the database no longer is valid
+

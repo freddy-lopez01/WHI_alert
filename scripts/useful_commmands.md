@@ -13,4 +13,5 @@ conda env export | grep -v "^prefix: " > environment.yml
 - buisness hours that are not empty (temporarily closed has a null value )
 - special hours (typically disaster )
 
+- schema very possibly may be invalid
 

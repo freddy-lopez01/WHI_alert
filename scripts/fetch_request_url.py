@@ -2,6 +2,7 @@ import asyncio
 from playwright.async_api import async_playwright, Playwright, Page
 import re
 from typing import List
+import json
 
 async def setup_browser() -> Page:
     """
@@ -20,10 +21,9 @@ async def setup_browser() -> Page:
     browser = await playwright.chromium.launch(headless=False)
     page = await browser.new_page()
     await page.goto("https://locations.wafflehouse.com")
-    await browser.close()
     return page, browser
 
-async def capture_network_requests(page: Page) -> List[str]:
+async def capture_network_requests(page: Page, url_locations: List[str]):
     """
     Captures all network requests made by the page.
 
@@ -31,36 +31,74 @@ async def capture_network_requests(page: Page) -> List[str]:
 
     Parameters:
         page (Page): The Playwright page instance to capture requests from.
-
-    Returns:
-        List[str]: A list of request URLs that were requested by the page.
     """
 
     # regex pattern to match URLs in the required form
     url_pattern = re.compile(r"https://locations\.wafflehouse\.com/_next/data/[^/]+/[a-z0-9\-]+\.json\?slug=[a-z0-9\-]+", re.IGNORECASE)
     
-    url_locations = []
     def on_request(request):
         url = request.url
         if url_pattern.match(url) and url not in url_locations:
-            print("Location Request URL:", url)
             url_locations.append(url)
     page.on("request", on_request)
-    return url_locations
 
-async def scroll_page():
-    """Scrolls down within the provided HTML locator element."""
-    # TODO: Locate scrollable area using the locator element.
-    # TODO: Move mouse to the scroll area.
-    # TODO: Scroll until reaching the bottom of page.
-        # Note: The current solution to this is to set a specific number of scrolls and each scroll pixel amount (not optimal).
-    pass
+def get_url_location(urls: List[str]) -> List[str]:
+    """
+    Extract the city, state, and store numbers and stores it into a list.
+
+    Parameters:
+        urls (List[str]):
+
+    Returns:
+        List[str]:
+    """
+    slugs = []
+    for url in urls:
+        match = re.search(r"/([^/]+)\.json", url)
+        if match:
+            slug = match.group(1)
+            slugs.append(slug)
+    return slugs
+
+
+async def scroll_page(page: Page, url_locations: List[str]):
+    """
+    Scrolls down within the provided HTML locator element dynamically.
+
+    Selects the HTML element and moves cursor to the scrollable area and scrolls a specific number of times. This function runs in parallel with capture_network_requests().
+
+    Parameters:
+        page (Page): The Playwright page instance to scroll.
+        url_locations (List[str]): The list to store captured URLs.
+    """
+
+    scrollable_area = page.locator('[role="feed"][aria-label="list Locations"]')
+    await scrollable_area.scroll_into_view_if_needed()
+    location_box = await scrollable_area.bounding_box()
+    if location_box:
+        await page.mouse.move(location_box["x"] + location_box["width"] / 2, location_box["y"] + 10)
+
+    # Note: The current solution to this is to set a specific number of scrolls and each scroll pixel amount (not optimal).
+    for _ in range(8400):
+        await page.mouse.wheel(0, 90)
 
 async def main():
-    """Main function to run script"""
+    # set up Playwright page and browser instance
     page, browser = await setup_browser()
-    urls = await capture_network_requests(page)
-    await asyncio.sleep(10)
+    url_locations = []
+
+    await capture_network_requests(page, url_locations)
+    await scroll_page(page, url_locations)
+    slugs = get_url_location(url_locations)
+    with open("locations.json", "w+") as file:
+        json.dump(slugs, file)
+    print(f"Total number of locations fetched: {len(slugs)}")
+
+    with open("locations.json", "r") as file:
+        slugs = json.load(file)
+        print(slugs)
+
+    await asyncio.sleep(2)
     await browser.close()
 
 if __name__ == "__main__":

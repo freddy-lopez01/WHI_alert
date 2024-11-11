@@ -10,4 +10,3 @@
  - Connect Front end to server 
  - Possibly look into load balancing Front end server 
  - Create clean minimal design for site (make it clean)
- - 

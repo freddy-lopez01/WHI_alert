@@ -1,0 +1,18 @@
+
+services:
+  # database set up
+  database:
+    image: mongo:6.0
+    container_name: mongodb_container
+    environment:
+      # environment variables loaded from .env
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    #TODO: backend setup
+      #TODO: frontend setup
+volumes:
+  mongo-data:

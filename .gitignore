@@ -1,4 +1,19 @@
+
+# General
 __pycache__/
 tests/__pycache__
 .DS_Store
 
+# Environment files
+database/.env
+
+
+# Docker
+docker-compose.override.yml
+*.log
+
+# System files
+*.log
+*.swp
+*.swo
+.idea/

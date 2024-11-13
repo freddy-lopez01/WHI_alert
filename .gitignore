@@ -4,8 +4,8 @@ __pycache__/
 tests/__pycache__
 .DS_Store
 
-# Environment files
-database/.env
+# Environment file
+.env
 
 
 # Docker

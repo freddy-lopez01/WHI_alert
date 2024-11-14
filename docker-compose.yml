@@ -2,7 +2,7 @@
 services:
   # database set up
   database:
-    image: mongo:6.0
+    image: mongo:8.0
     container_name: mongodb_container
     environment:
       # environment variables loaded from .env
@@ -12,7 +12,9 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    env_file:
+      - .env
     #TODO: backend setup
-      #TODO: frontend setup
+    #TODO: frontend setup
 volumes:
   mongo-data:

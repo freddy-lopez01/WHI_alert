@@ -1,15 +1,15 @@
 import asyncio
-from playwright.async_api import async_playwright, Page, Browser
+from playwright.async_api import async_playwright, Page, Request, Browser
 import re
-from typing import List
+from typing import List, Tuple
 import json
 
 class WaffleHouseScraper:
     def __init__(self):
-        self.url_locations = []
-        self.slugs = []
+        self.url_locations: List[str] = []
+        self.slugs: List[str] = []
 
-    async def setup_browser(self) -> (Page, Browser):
+    async def setup_browser(self) -> Tuple[Page, Browser]:
         """
         Initializes and sets up a Playwright browser instance and a new page
 
@@ -28,7 +28,7 @@ class WaffleHouseScraper:
         await page.goto("https://locations.wafflehouse.com")
         return page, browser
 
-    async def capture_network_requests(self, page: Page):
+    async def capture_network_requests(self, page: Page) -> None:
         """
         Captures all network requests made by the page.
 
@@ -41,14 +41,14 @@ class WaffleHouseScraper:
         # regex pattern to match URLs in the required form
         url_pattern = re.compile(r"https://locations\.wafflehouse\.com/_next/data/[^/]+/[a-z0-9\-]+\.json\?slug=[a-z0-9\-]+", re.IGNORECASE)
         
-        def on_request(request):
+        def on_request(request: Request):
             url = request.url
             if url_pattern.match(url) and url not in self.url_locations:
                 self.url_locations.append(url)
         page.on("request", on_request)
         print("Gathered Urls")
 
-    def get_url_location(self, urls: List[str]) -> List[str]:
+    def get_url_location(self, urls: list[str]) -> list[str]:
         """
         Extract the city, state, and store numbers and stores it into a list.
 
@@ -86,45 +86,49 @@ class WaffleHouseScraper:
         for _ in range(50):
             await page.mouse.wheel(0, 50)
 
-    async def save_slugs_to_file(self, filename="locations.json"):
+    async def save_slugs_to_file(self, filename: str ="locations.json") -> None:
         """
         Saves the extracted slugs to a JSON file.
         
         Parameters:
             filename (str): The filename to save the slugs data.
         """
-        slugs = self.extract_slugs()
         with open(filename, "w") as file:
-            json.dump(slugs, file, ensure_ascii=False, indent=4)
-        print(f"Total number of locations fetched: {len(slugs)}")
+            json.dump(self.slugs, file, ensure_ascii=False, indent=4)
+        print(f"Total number of locations fetched: {len(self.slugs)}")
 
-    async def get_unique_id(self) -> str:
+    async def get_unique_id(self) -> str | None:
         """
         Extracts the unique ID from a request URL.
 
         Returns:
-            - str: The unique ID as a string.
+            - str | None: The unique ID as a string if found, else None.
         """
+
+        if not self.url_locations:
+            print("self.url_locations is empty")
+            return None
+
         url = self.url_locations[0]
         print(url)
         match = re.search(r"/_next/data/([^/]+)/", url)
 
         if not match:
             print("No unique ID found")
-            return ""
+            return None
 
         unique_id = match.group(1)
         return unique_id
 
-    async def construct_url(self, unique_id: str):
+    async def construct_url(self, unique_id: str | None):
         """
         Reads from json formatted URLs and replaces the old unique_id with new unique_id and writes to a new file.
 
         Parameters:
-            unique_id (str): Unique ID in string format.
+            unique_id (str | None): Unique ID in string format. If there's no unique_id, then it becomes Nonetype.
         """
         with open("urls.json", "r") as file:
-            urls = json.load(file)
+            urls: List[str] = json.load(file)
 
         for url in urls:
             sub = re.sub(r"(_next/data/)[^/]+(/)", rf"\1{unique_id}\2", url)

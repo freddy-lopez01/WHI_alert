@@ -111,8 +111,9 @@ class WaffleHouseScraper:
 
         url = self.url_locations[0]
         print(url)
-        match = re.search(r"/_next/data/([^/]+)/", url)
+        match = re.search(r"data/([^/]+)/", url)
 
+        print(f"Match: {match}")
         if not match:
             print("No unique ID found")
             return None
@@ -122,16 +123,20 @@ class WaffleHouseScraper:
 
     async def construct_url(self, unique_id: str | None):
         """
-        Reads from json formatted URLs and replaces the old unique_id with new unique_id and writes to a new file.
+        Reads from JSON formatted URLs and replaces the old unique_id with new unique_id and writes to a new file.
 
         Parameters:
             unique_id (str | None): Unique ID in string format. If there's no unique_id, then it becomes Nonetype.
         """
+        if unique_id is None:
+            print("No unique ID provided.")
+            return
+
         with open("urls.json", "r") as file:
             urls: List[str] = json.load(file)
 
         for url in urls:
-            sub = re.sub(r"(_next/data/)[^/]+(/)", rf"\1{unique_id}\2", url)
+            sub = re.sub(r"(_next/data/)[^/]+(/)", lambda m: f"{m.group(1)}{unique_id}{m.group(2)}", url)
             self.url_locations.append(sub)
 
         with open("updated_urls.json", "w") as file:
